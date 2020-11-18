@@ -80,8 +80,8 @@ class SHE_MemoryUpdateProtocolGenerator:
         return self.uid + ( (self.id << 4) | (self.auth_id & 0x0F) ).to_bytes(1, 'big')
 
     def makeM2(self) :
-        data = ((self.counter << 4) | (0x000F & (self.key_flags >> 2))).to_bytes(4, 'big') \
-                 + (self.key_flags << 6).to_bytes(1, 'big') \
+        data = ((self.counter << 4) | (0x0F & (self.key_flags >> 2))).to_bytes(4, 'big') \
+                 + ((self.key_flags << 6) & 0x03).to_bytes(1, 'big') \
                  + bytes([0]*11) \
                  + self.key_new
         k1 = self.makeK1()
