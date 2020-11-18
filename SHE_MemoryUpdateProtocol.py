@@ -103,3 +103,4 @@ class SHE_MemoryUpdateProtocolGenerator:
         m4 = self.makeM4()
         k4 = self.makeK4()
         return generateCMac(k4, m4)
+
