@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import binascii
-from SHE_MemoryUpdateProtocol import SHE_MemoryUpdateProtocolGenerator, MiyaguchiPreneel_Compression
+from memory_update_protocol import SHE_MemoryUpdateProtocolGenerator, MiyaguchiPreneel_Compression
 
 def test_SHE_Basic() :
     uid_str = '000000000000000000000000000001'
