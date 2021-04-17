@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import binascii
-from memory_update_protocol import SHE_MemoryUpdateProtocolGenerator, MiyaguchiPreneel_Compression
+from memory_update_protocol import MemoryUpdateProtocol, mp_compress
 
-def test_SHE_Basic() :
+def basic_she_memory_update_protocol() :
     uid_str = '000000000000000000000000000001'
     key_new_str  = '0f0e0d0c0b0a09080706050403020100'
     key_auth_str = '000102030405060708090a0b0c0d0e0f'
@@ -17,16 +17,16 @@ def test_SHE_Basic() :
     key_auth = binascii.unhexlify(key_auth_str)
 
     # self, id, key_new, auth_id, key_auth, uid, counter, key_flags
-    she = SHE_MemoryUpdateProtocolGenerator(id, key_new, auth_id, key_auth, uid, counter, key_flags)
-    k1 = she.makeK1()
-    k2 = she.makeK2()
-    k3 = she.makeK3()
-    k4 = she.makeK4()
-    m1 = she.makeM1()
-    m2 = she.makeM2()
-    m3 = she.makeM3()
-    m4 = she.makeM4()
-    m5 = she.makeM5()
+    she = MemoryUpdateProtocol(id, key_new, auth_id, key_auth, uid, counter, key_flags)
+    k1 = she.make_k1()
+    k2 = she.make_k2()
+    k3 = she.make_k3()
+    k4 = she.make_k4()
+    m1 = she.make_m1()
+    m2 = she.make_m2()
+    m3 = she.make_m3()
+    m4 = she.make_m4()
+    m5 = she.make_m5()
 
     print("K1 : " ,binascii.hexlify(k1))
     print("K2 : " ,binascii.hexlify(k2))
@@ -40,7 +40,7 @@ def test_SHE_Basic() :
     print("M5 : " ,binascii.hexlify(m5))
 
 
-def test_SHE_Extend() :
+def extend_she_memory_update_protocol() :
     KEY_UPDATE_ENC_C_Extend = '018153484500800000000000000000B0'
     KEY_UPDATE_MAC_C_Extend = '018253484500800000000000000000B0'
 
@@ -57,20 +57,20 @@ def test_SHE_Extend() :
     key_auth = binascii.unhexlify(key_auth_str)
 
     # self, id, key_new, auth_id, key_auth, uid, counter, key_flags
-    she = SHE_MemoryUpdateProtocolGenerator(id, key_new, auth_id, key_auth, uid, counter, key_flags)
+    she = MemoryUpdateProtocol(id, key_new, auth_id, key_auth, uid, counter, key_flags)
 
     she.KEY_UPDATE_ENC_C = binascii.unhexlify(KEY_UPDATE_ENC_C_Extend)
     she.KEY_UPDATE_MAC_C = binascii.unhexlify(KEY_UPDATE_MAC_C_Extend)
 
-    k1 = she.makeK1()
-    k2 = she.makeK2()
-    k3 = she.makeK3()
-    k4 = she.makeK4()
-    m1 = she.makeM1()
-    m2 = she.makeM2()
-    m3 = she.makeM3()
-    m4 = she.makeM4()
-    m5 = she.makeM5()
+    k1 = she.make_k1()
+    k2 = she.make_k2()
+    k3 = she.make_k3()
+    k4 = she.make_k4()
+    m1 = she.make_m1()
+    m2 = she.make_m2()
+    m3 = she.make_m3()
+    m4 = she.make_m4()
+    m5 = she.make_m5()
 
     print("K1 : " ,binascii.hexlify(k1))
     print("K2 : " ,binascii.hexlify(k2))
@@ -83,7 +83,7 @@ def test_SHE_Extend() :
     print("M4 : " ,binascii.hexlify(m4))
     print("M5 : " ,binascii.hexlify(m5))
     
-def test_SHE_Extend2() :
+def extend_she_memory_update_protocol2() :
     KEY_UPDATE_ENC_C_Extend = '018153484500800000000000000000B0'
     KEY_UPDATE_MAC_C_Extend = '018253484500800000000000000000B0'
 
@@ -100,20 +100,20 @@ def test_SHE_Extend2() :
     key_auth = binascii.unhexlify(key_auth_str)
 
     # self, id, key_new, auth_id, key_auth, uid, counter, key_flags
-    she = SHE_MemoryUpdateProtocolGenerator(id, key_new, auth_id, key_auth, uid, counter, key_flags)
+    she = MemoryUpdateProtocol(id, key_new, auth_id, key_auth, uid, counter, key_flags)
 
     she.KEY_UPDATE_ENC_C = binascii.unhexlify(KEY_UPDATE_ENC_C_Extend)
     she.KEY_UPDATE_MAC_C = binascii.unhexlify(KEY_UPDATE_MAC_C_Extend)
 
-    k1 = she.makeK1()
-    k2 = she.makeK2()
-    k3 = she.makeK3()
-    k4 = she.makeK4()
-    m1 = she.makeM1()
-    m2 = she.makeM2()
-    m3 = she.makeM3()
-    m4 = she.makeM4()
-    m5 = she.makeM5()
+    k1 = she.make_k1()
+    k2 = she.make_k2()
+    k3 = she.make_k3()
+    k4 = she.make_k4()
+    m1 = she.make_m1()
+    m2 = she.make_m2()
+    m3 = she.make_m3()
+    m4 = she.make_m4()
+    m5 = she.make_m5()
 
     print("K1 : " ,binascii.hexlify(k1))
     print("K2 : " ,binascii.hexlify(k2))
@@ -126,23 +126,23 @@ def test_SHE_Extend2() :
     print("M4 : " ,binascii.hexlify(m4))
     print("M5 : " ,binascii.hexlify(m5))
 
-def test_miyaguchi_comp() :
+def miyaguchi_comp() :
     msg = binascii.unhexlify('6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5180000000000000000000000000000100')
-    res = MiyaguchiPreneel_Compression(msg)
+    res = mp_compress(msg)
     # output c7277a0dc1fb853b5f4d9cbd26be40c6
     print(binascii.hexlify(res))
 
 def main() :
     print('-- SHE test --')
-    test_SHE_Basic()
+    basic_she_memory_update_protocol()
 
     print('-- SHE Extend test--')
-    test_SHE_Extend()
+    extend_she_memory_update_protocol()
     
     print('-- SHE Extend2 test--')
-    test_SHE_Extend2()
+    extend_she_memory_update_protocol2()
 
-    test_miyaguchi_comp()
+    miyaguchi_comp()
 
 if __name__ == '__main__':
     main()
