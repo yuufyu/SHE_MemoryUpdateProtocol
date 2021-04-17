@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- mode: python; coding: utf-8-unix -*-
 
 from Crypto.Cipher import AES
 from Crypto.Hash import CMAC

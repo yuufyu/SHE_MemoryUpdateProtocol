@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- mode: python; coding: utf-8-unix -*-
 
 import binascii
 from SHE_MemoryUpdateProtocol import SHE_MemoryUpdateProtocolGenerator, MiyaguchiPreneel_Compression
