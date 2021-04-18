@@ -1,6 +1,7 @@
 # SHE Memory Update Protocol
 
-Implementation of memory update protocol specified in SHE specification.
+Implementation of memory update protocol specified in SHE specification.  
+The example can be executed by running the script [example.py](example.py).
 
 ## Installation
 Install the required modules:
