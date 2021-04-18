@@ -1,8 +1,31 @@
 #!/usr/bin/env python3
+# -----------------------------------------------------------------
+# SHE Memory Update Protocol
+# Generate M1,M2,M3,M4,M5 message.
+# -----------------------------------------------------------------
 
+from dataclasses import dataclass
+from builtins import bytes
 from Crypto.Cipher import AES
 from Crypto.Hash import CMAC
-from builtins import bytes
+
+@dataclass
+class MemoryUpdateInfo :
+    KEY_NEW             : bytes
+    KEY_AuthID          : bytes
+    UID                 : bytes
+    ID                  : int
+    AuthID              : int
+    C_ID                : int 
+    F_ID                : int
+
+@dataclass
+class MemoryUpdateMessage :
+    M1                  : bytes
+    M2                  : bytes
+    M3                  : bytes
+    M4                  : bytes
+    M5                  : bytes
 
 def encrypt_ecb(key, value):
     mode = AES.MODE_ECB
@@ -21,12 +44,11 @@ def generate_cmac(key, msg) :
     cmac.update(msg)
     return cmac.digest()
 
-# -----------------------------------------------------------------
+def array_xor(a,b):
+    return bytes(x ^ y for x, y in zip(a, b))
+
 # Miyaguchi-Preneel one-way compression function
-# 
-# NOTE: data length must be  a multiple of 16byte.
-# TODO : implement padding
-# -----------------------------------------------------------------
+# NOTE : data length must be  a multiple of 16byte.
 def mp_compress(data):
     l = len(data)
     CHUNK_LEN = 16                # 128bit(16byte) chunks
@@ -42,64 +64,28 @@ def mp_compress(data):
 def mp_kdf(k, c) :
     return mp_compress(k + c)
 
-def array_xor(a,b):
-    return bytes(x ^ y for x, y in zip(a, b))
+# Generate Memory Update Protocol Message
+def generate_message(info, KEY_UPDATE_ENC_C, KEY_UPDATE_MAC_C) -> MemoryUpdateMessage :
+    k1 = mp_kdf(info.KEY_AuthID, KEY_UPDATE_ENC_C)
+    k2 = mp_kdf(info.KEY_AuthID, KEY_UPDATE_MAC_C)
+    k3 = mp_kdf(info.KEY_NEW, KEY_UPDATE_ENC_C)
+    k4 = mp_kdf(info.KEY_NEW, KEY_UPDATE_MAC_C)
 
-# -----------------------------------------------------------------
-# SHE Memory Update Protocol
-# Generate M1,M2,M3,M4,M5 message.
-# -----------------------------------------------------------------
-class MemoryUpdateProtocol:
-    KEY_UPDATE_ENC_C = 0x010153484500800000000000000000B0.to_bytes(16, 'big')
-    KEY_UPDATE_MAC_C = 0x010253484500800000000000000000B0.to_bytes(16, 'big')
-
-    def __init__(self, id, key_new, auth_id, key_auth, uid, counter, key_flags):
-        self.id        = id
-        self.key_new   = key_new
-        self.auth_id   = auth_id
-        self.key_auth  = key_auth
-        self.uid       = uid
-        self.counter   = counter
-        self.key_flags = key_flags
-        # TODO check parameters size
-
-    def make_k1(self) :
-        return mp_kdf(self.key_auth, self.KEY_UPDATE_ENC_C)
-    
-    def make_k2(self) :
-        return mp_kdf(self.key_auth, self.KEY_UPDATE_MAC_C)
-
-    def make_k3(self) :
-        return mp_kdf(self.key_new, self.KEY_UPDATE_ENC_C)
-
-    def make_k4(self) :
-        return mp_kdf(self.key_new, self.KEY_UPDATE_MAC_C)
-    
-    def make_m1(self) :
-        return self.uid + ( (self.id << 4) | (self.auth_id & 0x0F) ).to_bytes(1, 'big')
-
-    def make_m2(self) :
-        data = ((self.counter << 4) | (0x0F & (self.key_flags >> 2))).to_bytes(4, 'big') \
-                 + ((self.key_flags << 6) & 0x03).to_bytes(1, 'big') \
+    m1 = info.UID + ( (info.ID << 4) | (info.AuthID & 0x0F) ).to_bytes(1, 'big')
+    m2 = encrypt_cbc(k1, ((info.C_ID << 4) | (0x0F & (info.F_ID >> 2))).to_bytes(4, 'big') \
+                 + ((info.F_ID << 6) & 0x03).to_bytes(1, 'big') \
                  + bytes([0]*11) \
-                 + self.key_new
-        k1 = self.make_k1()
-        return encrypt_cbc(k1, data)
+                 + info.KEY_NEW )
+    m3 = generate_cmac(k2, m1 + m2)
+    m4 = m1 + encrypt_ecb(k3, ((info.C_ID << 4) | 0x08).to_bytes(4, 'big') + bytes([0]*12))
+    m5 = generate_cmac(k4, m4)
 
-    def make_m3(self) :
-        m1 = self.make_m1()
-        m2 = self.make_m2()
-        k2 = self.make_k2()
-        return generate_cmac(k2, m1 + m2)
+    return MemoryUpdateMessage(m1, m2, m3, m4, m5)
 
-    def make_m4(self) :
-        data = ((self.counter << 4) | 0x08).to_bytes(4, 'big') + bytes([0]*12)
-        m1 = self.make_m1()
-        k3 = self.make_k3()
-        return m1 + encrypt_ecb(k3, data)
+# Generate Memory Update Protocol Message(Basic SHE)
+def generate_message_basic(info) -> MemoryUpdateMessage :
+    return generate_message(info, bytes.fromhex('010153484500800000000000000000B0'), bytes.fromhex('010253484500800000000000000000B0'))
 
-    def make_m5(self) :
-        m4 = self.make_m4()
-        k4 = self.make_k4()
-        return generate_cmac(k4, m4)
-
+# Generate Memory Update Protocol Message(SHE+)
+def generate_message_extend(info) -> MemoryUpdateMessage :
+    return generate_message(info, bytes.fromhex('018153484500800000000000000000B0'), bytes.fromhex('018253484500800000000000000000B0'))
