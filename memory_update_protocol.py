@@ -16,7 +16,7 @@ class MemoryUpdateInfo :
     UID                 : bytes
     ID                  : int
     AuthID              : int
-    C_ID                : int 
+    C_ID                : int
     F_ID                : int
 
 @dataclass
@@ -26,6 +26,14 @@ class MemoryUpdateMessage :
     M3                  : bytes
     M4                  : bytes
     M5                  : bytes
+
+# Add constant values for flags
+WRITE_PROTECTION    = 0b100000
+BOOT_PROTECTION     = 0b010000
+DEBUGGER_PROTECTION = 0b001000
+KEY_USAGE           = 0b000100
+WILDCARD            = 0b000010
+VERIFY_ONLY         = 0b000001
 
 def encrypt_ecb(key, value):
     mode = AES.MODE_ECB
@@ -43,6 +51,28 @@ def generate_cmac(key, msg) :
     cmac = CMAC.new(key, ciphermod = AES)
     cmac.update(msg)
     return cmac.digest()
+
+def decrypt_ecb(key, value):
+    mode = AES.MODE_ECB
+    enc  = AES.new(key, mode)
+    result = enc.decrypt(value)
+    return result
+
+def decrypt_cbc(key, value, iv = bytes([0]*16)):
+    mode = AES.MODE_CBC
+    enc  = AES.new(key, mode, iv = iv)
+    result = enc.decrypt(value)
+    return result
+
+def verify_cmac(key, msg, digest) :
+    cmac = CMAC.new(key, ciphermod = AES)
+    cmac.update(msg)
+    try:
+        cmac.verify(digest)
+        return True
+    except ValueError:
+        return False
+
 
 def array_xor(a,b):
     return bytes(x ^ y for x, y in zip(a, b))
@@ -73,7 +103,7 @@ def generate_message(info, KEY_UPDATE_ENC_C, KEY_UPDATE_MAC_C) -> MemoryUpdateMe
 
     m1 = info.UID + ( (info.ID << 4) | (info.AuthID & 0x0F) ).to_bytes(1, 'big')
     m2 = encrypt_cbc(k1, ((info.C_ID << 4) | (0x0F & (info.F_ID >> 2))).to_bytes(4, 'big') \
-                 + ((info.F_ID << 6) & 0x03).to_bytes(1, 'big') \
+                 + ((info.F_ID << 6) & 0xC0).to_bytes(1, 'big') \
                  + bytes([0]*11) \
                  + info.KEY_NEW )
     m3 = generate_cmac(k2, m1 + m2)
@@ -89,3 +119,20 @@ def generate_message_basic(info) -> MemoryUpdateMessage :
 # Generate Memory Update Protocol Message(SHE+)
 def generate_message_extend(info) -> MemoryUpdateMessage :
     return generate_message(info, bytes.fromhex('018153484500800000000000000000B0'), bytes.fromhex('018253484500800000000000000000B0'))
+
+
+# Decrypt SHE M* values
+def decrypt_message(KEY_AuthID, message, KEY_UPDATE_ENC_C, KEY_UPDATE_MAC_C) -> MemoryUpdateInfo:
+    k1 = mp_kdf(KEY_AuthID, KEY_UPDATE_ENC_C)
+    k2 = mp_kdf(KEY_AuthID, KEY_UPDATE_MAC_C)
+    UID = bytes.fromhex(message.M1.hex()[0:30])
+    ID = int(message.M1.hex()[30],16)
+    AuthID = int(message.M1.hex()[31],16)
+    dec = decrypt_cbc(k1,message.M2).hex()
+    C_ID = int(dec[0:7],16)
+    F_ID = int(dec[7:9],16)>>2
+    KEY_NEW = bytes.fromhex(dec[32:64])
+    if(verify_cmac(k2, message.M1 + message.M2, message.M3)):
+        return True, MemoryUpdateInfo(KEY_NEW, KEY_AuthID, UID, ID, AuthID, C_ID,F_ID)
+    else:
+        return False, MemoryUpdateInfo(KEY_NEW, KEY_AuthID, UID, ID, AuthID, C_ID,F_ID)

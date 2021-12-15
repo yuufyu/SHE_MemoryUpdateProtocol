@@ -3,6 +3,8 @@
 Implementation of memory update protocol specified in SHE specification.  
 The example can be executed by running the script [example.py](example.py).
 
+There is also an example of decoding M1-M3 values found in [m_value_decoder.py](m_value_decoder.py)
+
 ## Installation
 Install the required modules:
 ```
