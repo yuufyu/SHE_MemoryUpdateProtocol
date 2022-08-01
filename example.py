@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+from key_slots import AutosarKeySlots
 from memory_update_protocol import *
+
 
 # Generate Memory Update Protocol Message (Basic SHE)
 def basic_she_memory_update_protocol() :
@@ -9,8 +11,8 @@ def basic_she_memory_update_protocol() :
         UID           = bytes.fromhex('000000000000000000000000000001'),
         KEY_NEW       = bytes.fromhex('0f0e0d0c0b0a09080706050403020100'),
         KEY_AuthID    = bytes.fromhex('000102030405060708090a0b0c0d0e0f'),
-        ID            = 0x04,
-        AuthID        = 0x01,
+        ID            = AutosarKeySlots.KEY_1,
+        AuthID        = AutosarKeySlots.MASTER_ECU_KEY,
         C_ID          = 0x01, # Counter value
         F_ID          = 0x00  # Flags
     )
@@ -32,8 +34,8 @@ def extend_she_memory_update_protocol() :
         UID           = bytes.fromhex('000000000000000000000000000001'),
         KEY_NEW       = bytes.fromhex('0f0e0d0c0b0a09080706050403020100'),
         KEY_AuthID    = bytes.fromhex('000102030405060708090a0b0c0d0e0f'),
-        ID            = 0x04,
-        AuthID        = 0x01,
+        ID            = AutosarKeySlots.KEY_1,
+        AuthID        = AutosarKeySlots.MASTER_ECU_KEY,
         C_ID          = 0x01, # Counter value
         F_ID          = 0x00  # Flags
     )
@@ -55,8 +57,8 @@ def advanced_she_memory_update_protocol() :
         UID           = bytes.fromhex('000000000000000000000000000001'),
         KEY_NEW       = bytes.fromhex('0f0e0d0c0b0a09080706050403020100'),
         KEY_AuthID    = bytes.fromhex('000102030405060708090a0b0c0d0e0f'),
-        ID            = 0x04,
-        AuthID        = 0x01,
+        ID            = AutosarKeySlots.KEY_1,
+        AuthID        = AutosarKeySlots.MASTER_ECU_KEY,
         C_ID          = 0x01, # Counter value
         F_ID          = 0x00  # Flags
     )
