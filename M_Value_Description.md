@@ -16,7 +16,7 @@ C<sub>ID</sub> = 28 bit counter value for key
 
 F<sub>ID</sub> = 5 bit key flag value
 
-M2 = ENC<sub>CBC,K1,IV=0</sub>(C<sub>ID</sub>|F<sub>ID</sub>|"0...0"<sub>95</sub>|K<sub>ID</sub>)
+M2 = ENC<sub>CBC,K1,IV=0</sub>(C<sub>ID</sub> | F<sub>ID</sub> | "0...0"<sub>95</sub> | K<sub>ID</sub>)
 
 # M3
 
