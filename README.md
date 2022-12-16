@@ -13,3 +13,4 @@ pip install -r requirements.txt
 
 ## References
 * [Specification of Secure Hardware Extensions, AUTOSAR FO R19-11](https://www.autosar.org/fileadmin/user_upload/standards/foundation/19-11/AUTOSAR_TR_SecureHardwareExtensions.pdf)
+* [Description of the M* values](./m_value_description.md)
